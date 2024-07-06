@@ -2,7 +2,7 @@ import requests
 
 url = 'http://127.0.0.1:5000/predict'
 data = {
-    'EXT_SOURCE_3': 0.5,
+    'EXT_SOURCE_3': 0.9,
     'EXT_SOURCE_2': 0.5,
     'EXT_SOURCE_1': 0.5,
     'CC_CNT_DRAWINGS_ATM_CURRENT_MEAN': 0,
@@ -21,10 +21,10 @@ data = {
     'PREV_CODE_REJECT_REASON_XAP_MEAN': 0.4,
     'BURO_DAYS_CREDIT_MIN': -1500,
     'BURO_DAYS_CREDIT_UPDATE_MEAN': -500,
-    'DAYS_EMPLOYED_PERC': 0.6,
+    'DAYS_EMPLOYED_PERC': 0.9,
     'PREV_NAME_CONTRACT_STATUS_Approved_MEAN': 0.7,
     'CLOSED_DAYS_CREDIT_MIN': -1000,
-    'ACTIVE_DAYS_CREDIT_MEAN': -800
+    'ACTIVE_DAYS_CREDIT_MEAN': -1000000
 }
 
 response = requests.post(url, json=data)
@@ -35,3 +35,6 @@ if response.status_code == 200:
 else:
     print(f"Erreur: {response.status_code}")
     print(response.text)
+
+#probabilté d'etre refusé revoir le seuil
+#afficher le seuil et accepté ou refusé

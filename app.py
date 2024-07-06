@@ -35,3 +35,5 @@ def retrieve_features():
 
 if __name__ == "__main__":
     app.run(debug=True)
+
+# donner un autre nom à app

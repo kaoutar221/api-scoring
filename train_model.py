@@ -5,7 +5,6 @@ from sklearn.metrics import make_scorer, fbeta_score, roc_auc_score
 from imblearn.pipeline import Pipeline as ImbPipeline
 from imblearn.over_sampling import SMOTE
 import joblib
-import os
 
 # Charger les données
 file_path = 'data/sampled_df1.csv'
@@ -14,13 +13,6 @@ df = pd.read_csv(file_path)
 # Séparer les features et la cible
 X = df.drop(columns=['TARGET'])
 y = df['TARGET']
-
-# Sauvegarder les noms des features
-feature_names = X.columns.tolist()
-os.makedirs('model', exist_ok=True)
-with open('model/feature_names.txt', 'w') as f:
-    for feature in feature_names:
-        f.write(f"{feature}\n")
 
 # Définir le pipeline pour GradientBoostingClassifier
 gb_pipeline = ImbPipeline([
@@ -71,3 +63,10 @@ best_model_roc_auc_gb = gb_grid_search_roc_auc.best_estimator_
 # Sauvegarder le meilleur modèle
 model_path = 'model/best_model_fbeta_gb.pkl'
 joblib.dump(best_model_fbeta_gb, model_path)
+
+# Sauvegarder les noms des caractéristiques
+feature_names_path = 'model/feature_names.txt'
+with open(feature_names_path, 'w') as f:
+    for feature in X.columns:
+        f.write(f"{feature}\n")
+
