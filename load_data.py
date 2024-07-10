@@ -1,6 +1,5 @@
 import pandas as pd
 
-
 def load_data(file_path):
     """
     Charge les données à partir d'un fichier CSV.
@@ -16,9 +15,8 @@ def load_data(file_path):
         print(f"Erreur lors du chargement des données : {e}")
         return None
 
-
 if __name__ == "__main__":
-    file_path = 'data/sampled_df1.csv'  # Assurez-vous que ce chemin est correct
+    file_path = 'data/sampled_df1 (1).csv'  # Assurez-vous que ce chemin est correct
     df = load_data(file_path)
 
     if df is not None:
@@ -31,3 +29,4 @@ if __name__ == "__main__":
 
         print("\nStatistiques descriptives :")
         print(df.describe())
+

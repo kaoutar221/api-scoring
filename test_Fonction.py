@@ -1,6 +1,6 @@
 import pytest
 import json
-from app import app  # Assurez-vous que 'app' est le nom correct de votre application Flask dans 'app.py'
+from Fonction import app
 
 def test_homepage():
     with app.test_client() as client:

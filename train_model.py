@@ -7,7 +7,7 @@ from imblearn.over_sampling import SMOTE
 import joblib
 
 # Charger les données
-file_path = 'data/sampled_df1.csv'
+file_path = 'data/sampled_df1 (1).csv'
 df = pd.read_csv(file_path)
 
 # Séparer les features et la cible
