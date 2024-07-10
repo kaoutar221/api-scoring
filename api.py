@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, render_template_string
+from flask import Flask, request, jsonify, render_template
 import joblib
 import pandas as pd
 import logging
@@ -26,7 +26,7 @@ if df is None:
     raise FileNotFoundError(f"Le fichier {data_path} est introuvable ou ne peut pas être chargé.")
 
 # Obtenir quelques exemples d'identifiants
-identifiant_exemples = df['SK_ID_CURR'].sample(4, random_state=1).astype(int).tolist()
+identifiant_exemples = df['SK_ID_CURR'].sample(4, random_state=60).astype(int).tolist()
 
 # Créer l'application Flask
 app = Flask(__name__)
@@ -35,99 +35,7 @@ app = Flask(__name__)
 @app.route('/', methods=['GET'])
 def home():
     exemples = ", ".join(map(str, identifiant_exemples))
-    return render_template_string(f'''
-        <!doctype html>
-        <html lang="en">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Client Prediction</title>
-            <style>
-                body {{
-                    font-family: Arial, sans-serif;
-                    background-color: #f4f4f4;
-                    margin: 0;
-                    padding: 0;
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
-                    height: 100vh;
-                }}
-                .container {{
-                    background-color: #fff;
-                    padding: 20px;
-                    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-                    border-radius: 8px;
-                    text-align: center;
-                }}
-                h1 {{
-                    margin-bottom: 20px;
-                }}
-                input[type="number"] {{
-                    padding: 10px;
-                    width: 80%;
-                    margin-bottom: 10px;
-                    border: 1px solid #ccc;
-                    border-radius: 4px;
-                }}
-                input[type="submit"] {{
-                    padding: 10px 20px;
-                    background-color: #28a745;
-                    border: none;
-                    border-radius: 4px;
-                    color: #fff;
-                    cursor: pointer;
-                }}
-                input[type="submit"]:hover {{
-                    background-color: #218838;
-                }}
-                .result {{
-                    margin-top: 20px;
-                    padding: 10px;
-                    background-color: #e9ecef;
-                    border-radius: 4px;
-                }}
-            </style>
-        </head>
-        <body>
-            <div class="container">
-                <h1>Entrez l'identifiant du client</h1>
-                <p>Voici quelques exemples d'identifiants pour tester : {exemples}</p>
-                <form id="predictionForm">
-                    <input type="number" name="client_id" id="client_id" required>
-                    <input type="submit" value="Predict">
-                </form>
-                <div class="result" id="result"></div>
-            </div>
-            <script>
-                document.getElementById('predictionForm').addEventListener('submit', function(event) {{
-                    event.preventDefault();
-                    const client_id = document.getElementById('client_id').value;
-                    fetch('/predict', {{
-                        method: 'POST',
-                        headers: {{
-                            'Content-Type': 'application/x-www-form-urlencoded',
-                        }},
-                        body: 'client_id=' + client_id
-                    }})
-                    .then(response => response.json())
-                    .then(data => {{
-                        if (data.error) {{
-                            document.getElementById('result').innerHTML = '<p style="color: red;">' + data.error + '</p>';
-                        }} else {{
-                            document.getElementById('result').innerHTML = '<p>Client ID: ' + data.client_id + '</p>'
-                                + '<p>Probability of Default: ' + data.probability_of_default + '</p>'
-                                + '<p>Status: ' + data.status + '</p>';
-                        }}
-                    }})
-                    .catch(error => {{
-                        document.getElementById('result').innerHTML = '<p style="color: red;">Erreur: ' + error + '</p>';
-                    }});
-                }});
-            </script>
-        </body>
-        </html>
-    ''')
+    return render_template('home.html', exemples=exemples)
 
 
 @app.route('/predict', methods=['POST'])
@@ -147,10 +55,17 @@ def predict():
             return jsonify({'error': f"Client ID {client_id} n'est pas dans le dataset"}), 400
 
         client_data = df[df['SK_ID_CURR'] == client_id][feature_names]
-        logging.info(f"Données pour le client {client_id}: {client_data}")
+        logging.info(f"Données pour le client {client_id}: {client_data.to_dict(orient='records')}")
+
+        # Vérifier que les données du client ne sont pas vides
+        if client_data.empty:
+            logging.error(f"Données du client {client_id} sont vides")
+            return jsonify({'error': f"Données du client {client_id} sont vides"}), 400
 
         # Calculer la probabilité de défaut et la classe prédite
         probability = model.predict_proba(client_data)[:, 1][0]  # Probabilité de défaut
+        logging.info(f"Probabilité de défaut pour le client {client_id}: {probability}")
+
         threshold = 0.45  # Vous pouvez ajuster ce seuil selon vos besoins
         prediction = int((probability >= threshold).astype(int))  # Convertir en type sérialisable
         status = 'accepté' if prediction == 0 else 'refusé'  # Utiliser la syntaxe ternaire correcte
